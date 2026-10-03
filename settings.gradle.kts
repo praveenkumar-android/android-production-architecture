@@ -24,3 +24,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "AndroidProductionArchitecture"
 include(":app")
+include(":core-common")
+include(":core-designsystem")
+include(":core-testing")
+include(":feature-home")
+include(":domain")
+include(":data")
