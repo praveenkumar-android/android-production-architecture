@@ -1,15 +1,27 @@
 package com.praveenkumar.androidarchitecture.data.feed.repository
 
+import com.praveenkumar.androidarchitecture.data.feed.local.FeedDao
+import com.praveenkumar.androidarchitecture.data.feed.toDomain
+import com.praveenkumar.androidarchitecture.data.feed.toEntity
 import com.praveenkumar.androidarchitecture.domain.feed.model.FeedItem
 import com.praveenkumar.androidarchitecture.domain.feed.repository.FeedRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class FeedRepositoryImpl @Inject constructor() : FeedRepository {
-    private val feed = MutableStateFlow(
-        listOf(
+class FeedRepositoryImpl @Inject constructor(
+    private val feedDao: FeedDao
+) : FeedRepository {
+
+    override fun observeFeed(): Flow<List<FeedItem>> {
+        return feedDao.observeFeed()
+            .map { entities ->
+                entities.map { entity -> entity.toDomain() }
+            }
+    }
+
+    override suspend fun refreshFeed() {
+        val feedItems = listOf(
             FeedItem(
                 id = "1",
                 title = "Building Production Android Apps",
@@ -23,13 +35,9 @@ class FeedRepositoryImpl @Inject constructor() : FeedRepository {
                 imageUrl = null
             )
         )
-    )
 
-    override fun observeFeed(): Flow<List<FeedItem>> {
-        return feed.asStateFlow()
-    }
-
-    override suspend fun refreshFeed() {
-        // Network + local database will be implemented later.
+        feedDao.upsertAll(
+            feedItems.map { it.toEntity() }
+        )
     }
 }

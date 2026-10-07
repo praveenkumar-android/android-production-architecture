@@ -5,7 +5,7 @@ import com.praveenkumar.androidarchitecture.domain.feed.model.FeedItem
 data class HomeUiState (
     val isLoading: Boolean = false,
     val feed: List<FeedItem> = emptyList(),
-    val errorMessages: String? = null
+    val errorMessage: String? = null
 )
 
 sealed interface HomeUiEvent {
@@ -14,5 +14,5 @@ sealed interface HomeUiEvent {
 }
 
 sealed interface HomeUiEffect {
-    data class ShowError(val message: String): HomeUiEffect
+    data class ShowError(val message: String? = null): HomeUiEffect
 }

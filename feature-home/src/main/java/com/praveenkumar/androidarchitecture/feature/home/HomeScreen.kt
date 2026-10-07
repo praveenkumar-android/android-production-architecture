@@ -10,9 +10,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,11 +31,30 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    HomeContent(
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when(effect) {
+                is HomeUiEffect.ShowError -> {
+                    snackbarHostState.showSnackbar(effect.message ?: "An error occurred")
+                }
+            }
+
+        }
+    }
+
+    Scaffold(
         modifier = modifier,
-        uiState = uiState
-    )
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { innerPadding ->
+        HomeContent(
+            modifier = modifier.padding(innerPadding),
+            uiState = uiState
+        )
+    }
 }
 
 @Composable
@@ -49,9 +73,9 @@ private fun HomeContent(
             uiState.isLoading -> {
                 CircularProgressIndicator()
             }
-            uiState.errorMessages != null -> {
+            uiState.errorMessage != null -> {
                 Text(
-                    text = uiState.errorMessages,
+                    text = uiState.errorMessage,
                     color = MaterialTheme.colorScheme.error
                 )
             }
